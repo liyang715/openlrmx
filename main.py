@@ -30,7 +30,7 @@ root.title('请输入姓名')
 text_box = tk.Text(root, width=50, height=50)
 text_box.pack(side=tk.LEFT, padx=5, pady=5)
 
-button = tk.Button(root, text='处理', command=open_files)
+button = tk.Button(root, text='确定', command=open_files)
 button.pack(side=tk.RIGHT, padx=5, pady=5)
 
 root.mainloop()
