@@ -25,7 +25,7 @@ def open_files():
                 time.sleep(1)
 
 root = tk.Tk()
-root.title('多行文本输入')
+root.title('请输入姓名')
 
 text_box = tk.Text(root, width=50, height=50)
 text_box.pack(side=tk.LEFT, padx=5, pady=5)
