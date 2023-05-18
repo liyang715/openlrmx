@@ -27,7 +27,7 @@ def open_files():
 root = tk.Tk()
 root.title('多行文本输入')
 
-text_box = tk.Text(root, width=30, height=50)
+text_box = tk.Text(root, width=50, height=50)
 text_box.pack(side=tk.LEFT, padx=5, pady=5)
 
 button = tk.Button(root, text='处理', command=open_files)
