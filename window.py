@@ -68,7 +68,6 @@ class FileSelectorApp:
             self.save_last_selected_directory()
 
     def open_file(self):
-        # 获取 Text 控件中的文本并拆分为多行
         filenames = self.filename_entry.get("1.0", tk.END).strip().split('\n')
 
         if not self.selected_directory:
@@ -76,24 +75,28 @@ class FileSelectorApp:
             return
 
         not_found_files = filenames.copy()  # 初始化未找到文件列表
+        file_paths = {}  # 用于存储找到的文件路径
+
         for root, dirs, files in os.walk(self.selected_directory):
             for file in files:
                 for filename in filenames:
-                    # 为每个文件名添加 .lrmx 后缀
                     file_with_ext = f"{filename}.lrmx"
                     if file.lower() == file_with_ext.lower():
                         file_path = os.path.join(root, file)
 
-                        print(f"打开文件：{file_path}")
-                        # 使用 os.startfile() 打开文件
-                        os.startfile(file_path)
+                        # 将找到的文件路径添加到字典中，而不是立即打开
+                        file_paths[filename] = file_path
 
-                        # 在打开文件之间添加1秒的间隔
-                        time.sleep(1)
-
-                        # 从 not_found_files 中移除找到并打开的文件名
+                        # 从 not_found_files 中移除找到的文件名
                         if filename in not_found_files:
                             not_found_files.remove(filename)
+
+        # 按照输入文本中的文件名的顺序打开文件
+        for filename in filenames:
+            if filename in file_paths:
+                print(f"打开文件：{file_paths[filename]}")
+                os.startfile(file_paths[filename])
+                time.sleep(1)
 
         # 如果仍有未找到的文件
         if not_found_files:
