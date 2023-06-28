@@ -1,36 +1,106 @@
 import os
 import time
+import pickle
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox, simpledialog
 
-def get_input_list():
-    return text_box.get('1.0', tk.END).strip().split('\n')
 
-def search_file(search_path, target_file):
-    for root, dirs, files in os.walk(search_path):
-        if target_file in files:
-            return os.path.join(root, target_file)
-    return None
+class FileSelectorApp:
+    last_selected_directory_pickle = "last_selected_directory.pickle"
+    default_extension = ".lrmx"
 
-def open_files():
-    names = get_input_list()
-    with tk.Tk().withdraw():
-        folder_path = filedialog.askdirectory(title="选择干审表文件夹路径")
-    if folder_path:
-        for name in names:
-            openfile = f'{name.strip()}.lrmx'
-            openfile_path = search_file(folder_path, openfile)
-            if openfile_path:
-                os.startfile(openfile_path)
-                time.sleep(1)
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Select File Directory")
 
-root = tk.Tk()
-root.title('请输入姓名')
+        screen_width = self.window.winfo_screenwidth()
+        screen_height = self.window.winfo_screenheight()
 
-text_box = tk.Text(root, width=50, height=50)
-text_box.pack(side=tk.LEFT, padx=5, pady=5)
+        window_width = int(screen_width / 2)
+        window_height = int(screen_height / 2)
 
-button = tk.Button(root, text='确定', command=open_files)
-button.pack(side=tk.RIGHT, padx=5, pady=5)
+        x_position = int((screen_width - window_width) / 2)
+        y_position = int((screen_height - window_height) / 2)
 
-root.mainloop()
+        self.window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+        self.window.resizable(False, False)
+
+        self.open_folder_btn = tk.Button(self.window, text="Select Directory", command=self.select_directory)
+        self.open_folder_btn.pack()
+
+        self.selected_directory_label = tk.Label(self.window, text="Selected Directory:")
+        self.selected_directory_label.pack()
+
+        self.filename_entry = tk.Text(self.window, width=int(window_width*0.5*0.25), height=int(window_height*0.5*0.12))
+        self.filename_entry.pack()
+
+        self.open_file_btn = tk.Button(self.window, text="Open File", command=self.open_file)
+        self.open_file_btn.pack()
+
+        self.extension = self.default_extension
+        self.extension_btn = tk.Button(self.window, text="Set Extension", command=self.set_extension)
+        self.extension_btn.pack()
+
+        self.load_last_selected_directory()
+
+    def load_last_selected_directory(self):
+        if os.path.exists(self.last_selected_directory_pickle):
+            with open(self.last_selected_directory_pickle, 'rb') as f:
+                self.selected_directory = pickle.load(f)
+        else:
+            self.selected_directory = ""
+
+        self.selected_directory_label.config(text=f"Selected Directory: {self.selected_directory}")
+
+    def save_last_selected_directory(self):
+        with open(self.last_selected_directory_pickle, 'wb') as f:
+            pickle.dump(self.selected_directory, f)
+
+    def select_directory(self):
+        selected_directory = filedialog.askdirectory()
+        if selected_directory:
+            self.selected_directory = selected_directory
+            self.selected_directory_label.config(text=f"Selected Directory: {self.selected_directory}")
+            self.save_last_selected_directory()
+
+    def set_extension(self):
+        self.extension = simpledialog.askstring("Set Extension", f"Enter file extension (default: {self.default_extension})") or self.default_extension
+
+    def open_file(self):
+        filenames = self.filename_entry.get("1.0", tk.END).strip().split('\n')
+
+        if not self.selected_directory:
+            messagebox.showwarning("Warning", "Please select a valid directory first!")
+            return
+
+        not_found_files = filenames.copy()
+        file_paths = {}
+
+        for root, dirs, files in os.walk(self.selected_directory):
+            for file in files:
+                for filename in filenames:
+                    file_with_ext = f"{filename}{self.extension}"
+                    if file.lower() == file_with_ext.lower():
+                        file_path = os.path.join(root, file)
+                        file_paths[filename] = file_path
+                        if filename in not_found_files:
+                            not_found_files.remove(filename)
+
+        for filename in filenames:
+            if filename in file_paths:
+                print(f"Opening file: {file_paths[filename]}")
+                try:
+                    os.startfile(file_paths[filename])
+                    time.sleep(1)
+                except Exception as e:
+                    print(f"Failed to open file {filename}: {e}")
+
+        if not_found_files:
+            messagebox.showwarning("Warning", f"The following files do not exist:\n{', '.join(not_found_files)}")
+
+
+if __name__ == "__main__":
+    app = FileSelectorApp()
+    app.window.mainloop()
+
