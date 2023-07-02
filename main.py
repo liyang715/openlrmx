@@ -1,12 +1,13 @@
 import os
 import time
-import pickle
+import json
 import tkinter as tk
 from tkinter import filedialog, messagebox, simpledialog
+from pathlib import Path
 
 
 class FileSelectorApp:
-    last_selected_directory_pickle = "last_selected_directory.pickle"
+    last_selected_directory_json = Path.home() / "last_selected_directory.json"
     default_extension = ".lrmx"
 
     def __init__(self):
@@ -45,17 +46,19 @@ class FileSelectorApp:
         self.load_last_selected_directory()
 
     def load_last_selected_directory(self):
-        if os.path.exists(self.last_selected_directory_pickle):
-            with open(self.last_selected_directory_pickle, 'rb') as f:
-                self.selected_directory = pickle.load(f)
+        if self.last_selected_directory_json.is_file():
+            with self.last_selected_directory_json.open() as f:
+                data = json.load(f)
+                self.selected_directory = data.get("selected_directory", "")
         else:
             self.selected_directory = ""
 
         self.selected_directory_label.config(text=f"Selected Directory: {self.selected_directory}")
 
     def save_last_selected_directory(self):
-        with open(self.last_selected_directory_pickle, 'wb') as f:
-            pickle.dump(self.selected_directory, f)
+        data = {"selected_directory": self.selected_directory}
+        with self.last_selected_directory_json.open(mode="w") as f:
+            json.dump(data, f)
 
     def select_directory(self):
         selected_directory = filedialog.askdirectory()
@@ -89,10 +92,13 @@ class FileSelectorApp:
 
         for filename in filenames:
             if filename in file_paths:
-                print(f"Opening file: {file_paths[filename]}")
+                file_path = file_paths[filename]
+                print(f"Opening file: {file_path}")
                 try:
-                    os.startfile(file_paths[filename])
+                    os.startfile(file_path)
                     time.sleep(1)
+                except FileNotFoundError:
+                    print(f"Failed to open file {filename}: File not found")
                 except Exception as e:
                     print(f"Failed to open file {filename}: {e}")
 
@@ -103,4 +109,5 @@ class FileSelectorApp:
 if __name__ == "__main__":
     app = FileSelectorApp()
     app.window.mainloop()
+
 
