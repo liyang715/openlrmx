@@ -81,7 +81,7 @@ class FileSelectorApp:
             for file in files:
                 for filename in filenames:
                     file_with_ext = f"{filename}.lrmx"
-                    if file_with_ext.lower() in file.lower():
+                    if file.lower() == file_with_ext.lower():
                         file_path = os.path.join(root, file)
 
                         # 将找到的文件路径添加到字典中，而不是立即打开
