@@ -96,11 +96,16 @@ class FileSelectorApp:
             if filename in file_paths:
                 print(f"打开文件：{file_paths[filename]}")
                 os.startfile(file_paths[filename])
-                time.sleep(1.5)
+                time.sleep(1)
 
         # 如果仍有未找到的文件
         if not_found_files:
             messagebox.showwarning("警告", f"以下文件不存在：\n{', '.join(not_found_files)}")
+
+
+if __name__ == "__main__":
+    app = FileSelectorApp()
+    app.window.mainloop()
 
 
 if __name__ == "__main__":
