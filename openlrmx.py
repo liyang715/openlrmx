@@ -106,3 +106,8 @@ class FileSelectorApp:
 if __name__ == "__main__":
     app = FileSelectorApp()
     app.window.mainloop()
+
+
+if __name__ == "__main__":
+    app = FileSelectorApp()
+    app.window.mainloop()
